@@ -6,4 +6,5 @@ Atomic Routines written by James
 To run, simply 
 
 * clone the repository
-* run recomb.py, either in the repo directory or by adding the directory to your path
+* python setup.py will create environment variables in .bash_profile if you are on OSX
+* python recomb.py [mode] [temp] [nlevels]
