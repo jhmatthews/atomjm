@@ -25,17 +25,19 @@ import os
 
 
 mode = sys.argv[1]		
+ATOMJM=os.environ["ATOMJM"]
+
 
 print "\nCalculating strength of recombination lines for Case A.\n\n"
 	
 #Let's work with a 4 level Hydrogen atom, for now
-filename = "data/atomic_macro/h4_lines.py"	# atomic data file
+filename = ATOMJM+"/data/h4_lines.py"	# atomic data file
 
 # this next line simply reads line info from the file and places in a line class instance
 line_info = read_line_info(filename)
 
 
-ATOMJM=os.environ["ATOMJM"]
+
 
 
 nlevels = int(sys.argv[3])			# 4 level macro atom
@@ -129,7 +131,7 @@ for i_line in range(len(line_info)):
 print"\n"
 
 
-level = read_level_info("data/atomic_macro/h4_levels.py")
+level = read_level_info(ATOMJM+"/data/h4_levels.py")
 
 
 transition_probs = np.loadtxt("transitions", dtype = "float", comments = "#", unpack=True)
