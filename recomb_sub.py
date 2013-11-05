@@ -385,11 +385,21 @@ def ferland_F (x, coeffs):
 	
 	numerator = coeffs[0] + x*coeffs[2] +  (x**2)*coeffs[4] + (x**3)*coeffs[6] + (x**4)*coeffs[8]
 	
-	denominaotr = 1.0 + x*coeffs[1] +  (x**2)*coeffs[3] + (x**3)*coeffs[5] + (x**4)*coeffs[7]
+	denominator = 1.0 + x*coeffs[1] +  (x**2)*coeffs[3] + (x**3)*coeffs[5] + (x**4)*coeffs[7]
 	
 	return numerator / denominator
 	
 	
+def get_ferguson_data():
+	
+	'''
+	gets ferguson data from file data/ferguson.dat
+	'''
+	ATOMJM=os.environ['ATOMJM']
+	data=ATOMJM + "/data/ferguson.dat"
+	array = np.loadtxt ( data, comments ="#", dtype = "float")
+	
+	return array
 	
 	
 	
