@@ -355,6 +355,40 @@ def get_weight (level_class, index):
 		
 	
 	
+def alpha_sp( n , T):
+	'''get recombination coefficient for level n, electron temperature T'''
+	
+	x = np.log10(T)
+	
+	alpha = ( 10.0 ** ( ferland_F (x, coeffs) ) ) / T
+	
+	return alpha
+	
+
+
+
+
+
+def ferland_F (x, coeffs):
+	
+	'''Equation (1) from Ferguson and Ferland 1996
+	
+	:INPUT:
+		x:		float
+				log(T_e)
+		coeffs:		float array
+				array of coefficients
+	OUTPUT:
+		F:	float
+		
+	'''
+	
+	numerator = coeffs[0] + x*coeffs[2] +  (x**2)*coeffs[4] + (x**3)*coeffs[6] + (x**4)*coeffs[8]
+	
+	denominaotr = 1.0 + x*coeffs[1] +  (x**2)*coeffs[3] + (x**3)*coeffs[5] + (x**4)*coeffs[7]
+	
+	return numerator / denominator
+	
 	
 	
 	
