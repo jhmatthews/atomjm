@@ -20,6 +20,7 @@ History:
 from line_routines import A21, q12, q21, read_line_info, read_level_info, read_chianti_data
 import numpy as np
 from recomb_const import *
+import os
 
 
 
@@ -360,7 +361,16 @@ def alpha_sp( n , T):
 	
 	x = np.log10(T)
 	
-	alpha = ( 10.0 ** ( ferland_F (x, coeffs) ) ) / T
+	if n<=15:
+	
+		data = get_ferguson_data()
+	
+		coeffs = data[n-1] 
+	
+		alpha = ( 10.0 ** ( ferguson_F (x, coeffs) ) ) / T
+		
+	else:
+		print 'AHH'
 	
 	return alpha
 	
@@ -369,7 +379,7 @@ def alpha_sp( n , T):
 
 
 
-def ferland_F (x, coeffs):
+def ferguson_F (x, coeffs):
 	
 	'''Equation (1) from Ferguson and Ferland 1996
 	
@@ -395,9 +405,15 @@ def get_ferguson_data():
 	'''
 	gets ferguson data from file data/ferguson.dat
 	'''
-	ATOMJM=os.environ['ATOMJM']
-	data=ATOMJM + "/data/ferguson.dat"
+	
+	ATOMJM = os.environ ['ATOMJM']
+	
+	data = ATOMJM + "/data/ferguson.dat"
+	
 	array = np.loadtxt ( data, comments ="#", dtype = "float")
+	#print array[0]
+	
+	array = np.transpose(array)
 	
 	return array
 	

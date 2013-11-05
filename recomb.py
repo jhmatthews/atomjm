@@ -23,76 +23,76 @@ from recomb_sub import *
 import sys
 import os
 
-
-mode = sys.argv[1]		
-ATOMJM=os.environ["ATOMJM"]
-
-
-print "\nCalculating strength of recombination lines for Case A.\n\n"
 	
-#Let's work with a 4 level Hydrogen atom, for now
-filename = ATOMJM+"/data/h4_lines.py"	# atomic data file
+ATOMJM = os.environ["ATOMJM"]
 
-# this next line simply reads line info from the file and places in a line class instance
-line_info = read_line_info(filename)
-
-
-
-
-
-nlevels = int(sys.argv[3])			# 4 level macro atom
+# physical characteristics of medium
 ne = 1.4e6			# electron density
 nprots = 1.4e6		# H+ density
 V = 1.3e23			# volume of cell
 
 
+print "\nCalculating strength of recombination lines for Case A.\n\n"
 
+mode = sys.argv[1]	
+T = float(sys.argv[2])
+nlevels = int(sys.argv[3])			# n level macro atom
+
+
+
+
+#Let's work with an n level Hydrogen atom
+line_filename = "%s/data/h20_lines.py" % (ATOMJM)	# atomic data file
+level_filename = "%s/data/h20_lines.py" % (ATOMJM)
+
+
+# this next line simply reads line info from the file and places in a line class instance
+line_info = read_line_info (line_filename)
+
+# obtain recombination coefficients
+if mode == "std":
+	alphas = [ alpha_sp( n , T) for n in range(1,nlevels+1) ]
 
 # recombination coefficients from Osterbrock. 
 # the subscript gives the name of the subshell
 # note that entry 0 is level 1
-T = float(sys.argv[2])
+
+if mode == "oster" or mode == "sub":
+
+	if T == 10000.0:
+		alpha_S = np.array([ 1.58e-13, 2.34e-14, 7.81e-15, 3.59e-15 ])
+		alpha_P = np.array([0.0, 5.35e-14, 2.04e-14, 9.66e-15])
+		alpha_D = np.array([0.0, 0.0, 1.73e-14, 1.08e-14])
+		alpha_F = np.array([0.0, 0.0, 0.0, 5.54e-15])
 	
-if T == 10000.0:
-	alpha_S = np.array([ 1.58e-13, 2.34e-14, 7.81e-15, 3.59e-15 ])
-	alpha_P = np.array([0.0, 5.35e-14, 2.04e-14, 9.66e-15])
-	alpha_D = np.array([0.0, 0.0, 1.73e-14, 1.08e-14])
-	alpha_F = np.array([0.0, 0.0, 0.0, 5.54e-15])
-	
-elif T == 20000.0:
-	alpha_S = np.array([ 1.08e-13, 1.60e-14, 5.29e-15, 2.40e-15 ])
-	alpha_P = np.array([0.0, 3.24e-14, 1.23e-14, 5.81e-15])
-	alpha_D = np.array([0.0, 0.0, 9.49e-15, 5.68e-15])
-	alpha_F = np.array([0.0, 0.0, 0.0, 2.56e-15])
+	elif T == 20000.0:
+		alpha_S = np.array([ 1.08e-13, 1.60e-14, 5.29e-15, 2.40e-15 ])
+		alpha_P = np.array([0.0, 3.24e-14, 1.23e-14, 5.81e-15])
+		alpha_D = np.array([0.0, 0.0, 9.49e-15, 5.68e-15])
+		alpha_F = np.array([0.0, 0.0, 0.0, 2.56e-15])
 		
+	else:
+	
+		print "Error, T must be 10000 or 20000 in oster mode"
+		
+	alpha_sum = alpha_S + alpha_P + alpha_D + alpha_F
+	
+	if mode == "sub": 
+		alphas = [alpha_S, alpha_P, alpha_D, alpha_F]
+
+
+
+
+if mode =="oster":
+	level_pops, emiss = level_populations ( nlevels, alpha_sum, ne, line_info)
 else:
-	
-	print "Error, T must be 10000 or 20000 in std mode"
-	
-if mode == "std":	
-	# sum the subshells to give recombiantion coefficient for level n	
-	alpha_sum = alpha_S + alpha_P + alpha_D + alpha_F
-	print "ALPHAS:", alpha_sum
-		
-elif mode == "sub":
-	# we need subshells!
-	# code up subshell recombination coefficient and put function here
-	alpha_sum = alpha_S + alpha_P + alpha_D + alpha_F
-	alphas = [alpha_S, alpha_P, alpha_D, alpha_F]
-	print 'SUBSHELL MODE'
-
-
+	level_pops, emiss = level_populations ( nlevels, alphas, ne, line_info)
 
 
 print "A VALUES"
 for i in range(len(line_info)):
 	print "A%i%i %8.4e" % (line_info[i].lu,  line_info[i].ll, A21 ( line_info[i] ))
 
-
-	
-# Get the level populations 
-# function described above
-level_pops, emiss = level_populations ( nlevels, alpha_sum, ne, line_info)
 
 
 print "\n  Level\t|\t  Pops     \t|  Emissivity rel to level 4"
@@ -126,8 +126,8 @@ print "\nH_alpha / H_beta  %f\n" % (H_alpha / H_beta)
 
 # print out all other line strengths
 for i_line in range(len(line_info)):
-		I = H *  A21(line_info[i_line]) * level_pops[line_info[i_line].lu - 1] *line_info[i_line].freq / H_beta
-		print "Line strength %i => %i:  %.2f" % (line_info[i_line].lu, line_info[i_line].ll, I)
+	I = H *  A21(line_info[i_line]) * level_pops[line_info[i_line].lu - 1] *line_info[i_line].freq / H_beta
+	print "Line strength %i => %i:  %.2f" % (line_info[i_line].lu, line_info[i_line].ll, I)
 		
 print"\n"
 
@@ -140,27 +140,34 @@ print"\n"
 print "\n\n"
 
 # read in chianti data
-chianti_levels, chianti_wgfa = read_chianti_data ( level_filename=ATOMJM+"/chianti/h_1.clvlc", 
-                                                   radiative_filename=ATOMJM+"/chianti/h_1.wgfa")
+if mode == 'sub':
+	chianti_levels, chianti_wgfa = read_chianti_data ( level_filename=ATOMJM+"/chianti/h_1.clvlc", 
+		                                               radiative_filename=ATOMJM+"/chianti/h_1.wgfa")
 
-print 'Read Chianti data.'
+	print 'Read Chianti data.'
 
-npops, emiss_sub, emiss_principle, Halpha_ratio, lyman_ratio = subshell_pops ( 4, alphas, ne, chianti_levels, chianti_wgfa )
-
-
-for i_em in range(len(emiss)):
-	print "Level %i, pops_nonsub %f pops_sub %f" % (i_em+1, 
-	                                                emiss[i_em]/emiss[3], 
-	                                                emiss_principle[i_em]/ emiss_principle[3])
+	npops, emiss_sub, emiss_principle, Halpha_ratio, lyman_ratio = subshell_pops ( 4, alphas, ne, chianti_levels, chianti_wgfa )
 
 
-print "Halpha_ratio",  Halpha_ratio                              
-print "Lyman ratio", lyman_ratio
+	for i_em in range(len(emiss)):
+		print "Level %i, pops_nonsub %f pops_sub %f" % (i_em+1, 
+			                                            emiss[i_em]/emiss[3], 
+			                                            emiss_principle[i_em]/ emiss_principle[3])
+
+
+	print "Halpha_ratio",  Halpha_ratio                              
+	print "Lyman ratio", lyman_ratio
 
 
 
 
 
+sys.exit()
+
+
+#####################################
+#procedures for working out level information base on transition probabilities
+#####################################
 
 
 
@@ -236,6 +243,11 @@ for i in range(len(transition_probs[0])):
 			print "%i => %i eprbs %f jprbs %f alphae %f" % ( n_old, n_new, eprbs, jprbs, alpha_val)
 			
 			
+
+
+
+
+
 
 
 
