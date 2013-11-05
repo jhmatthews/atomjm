@@ -20,7 +20,7 @@ History:
 from line_routines import A21, q12, q21, read_line_info, read_level_info, read_chianti_data
 import numpy as np
 from recomb_const import *
-import os
+import os, sys
 
 
 
@@ -346,22 +346,36 @@ def get_weight (level_class, index):
 	for i in range(len(level_class)):
 		
 		if level_class[i].notation == subshell:
-			weight_sum += 1.0*level_class[i].multiplicity
+			weight_sum += 1.0 * level_class[i].multiplicity
 			
 	
 	# relative weight needs to be divided by weight for all these substates
-	weight = (1.0*level_class[index].multiplicity) / weight_sum	
+	weight = ( 1.0 * level_class[index].multiplicity ) / weight_sum	
 	
 	return weight
 		
 	
 	
 def alpha_sp( n , T):
-	'''get recombination coefficient for level n, electron temperature T'''
+
+	'''
+	get recombination coefficient for level n, electron temperature T
+	
+	:INPUT:
+		n:			float
+					number of level
+		T:			float
+					Electron temperature, K
+	
+	:OUTPUT:
+		alpha:		float
+					recombination coefficient in cm**-3 s**-1
+					for principal quantum number n
+	'''
 	
 	x = np.log10(T)
 	
-	if n<=15:
+	if n <= 15:
 	
 		data = get_ferguson_data()
 	
@@ -370,7 +384,8 @@ def alpha_sp( n , T):
 		alpha = ( 10.0 ** ( ferguson_F (x, coeffs) ) ) / T
 		
 	else:
-		print 'AHH'
+		print "Don't have enough Ferguson data to deal with n>15 yet- need to implement asymptotic formula, sorry!"
+		sys.exit()
 	
 	return alpha
 	
@@ -381,39 +396,51 @@ def alpha_sp( n , T):
 
 def ferguson_F (x, coeffs):
 	
-	'''Equation (1) from Ferguson and Ferland 1996
+	'''
+	Equation (1) from Ferguson and Ferland 1996.
+	Uses coefficients as input which should be taken from get_ferguson_data()
 	
 	:INPUT:
-		x:		float
-				log(T_e)
+		x:			float
+					log(T_e)
 		coeffs:		float array
-				array of coefficients
+					array of coefficients
 	OUTPUT:
-		F:	float
+		F:			float
+					F value for input to alpha calculation
 		
 	'''
 	
 	numerator = coeffs[0] + x*coeffs[2] +  (x**2)*coeffs[4] + (x**3)*coeffs[6] + (x**4)*coeffs[8]
-	
 	denominator = 1.0 + x*coeffs[1] +  (x**2)*coeffs[3] + (x**3)*coeffs[5] + (x**4)*coeffs[7]
 	
 	return numerator / denominator
+
+
+
 	
 	
 def get_ferguson_data():
 	
 	'''
-	gets ferguson data from file data/ferguson.dat
+	gets Ferguson & Ferland 1996 data from file data/ferguson.dat
+	
+	:INPUT: none
+	
+	:OUTPUT:
+		array:	float array
+				array of fergusion data, indexed by level. 
+				9 coefficients for each level
 	'''
 	
+	# set ATOMJM os environment
 	ATOMJM = os.environ ['ATOMJM']
 	
 	data = ATOMJM + "/data/ferguson.dat"
 	
-	array = np.loadtxt ( data, comments ="#", dtype = "float")
-	#print array[0]
-	
-	array = np.transpose(array)
+	# import data into array, then transpose so array[n-1] is coefficients for level n
+	array = np.loadtxt ( data, comments ="#", dtype = "float")	
+	array = np.transpose ( array )
 	
 	return array
 	

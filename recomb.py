@@ -41,7 +41,7 @@ nlevels = int(sys.argv[3])			# n level macro atom
 
 
 
-#Let's work with an n level Hydrogen atom
+#Let's work with an n level Hydrogen atom, up to 20.
 line_filename = "%s/data/h20_lines.py" % (ATOMJM)	# atomic data file
 level_filename = "%s/data/h20_lines.py" % (ATOMJM)
 
@@ -52,12 +52,13 @@ line_info = read_line_info (line_filename)
 # obtain recombination coefficients
 if mode == "std":
 	alphas = [ alpha_sp( n , T) for n in range(1,nlevels+1) ]
+	print alphas
 
 # recombination coefficients from Osterbrock. 
 # the subscript gives the name of the subshell
 # note that entry 0 is level 1
 
-if mode == "oster" or mode == "sub":
+if mode == "oster" or mode == "suboster":
 
 	if T == 10000.0:
 		alpha_S = np.array([ 1.58e-13, 2.34e-14, 7.81e-15, 3.59e-15 ])
@@ -77,59 +78,67 @@ if mode == "oster" or mode == "sub":
 		
 	alpha_sum = alpha_S + alpha_P + alpha_D + alpha_F
 	
-	if mode == "sub": 
+	if mode == "suboster": 
 		alphas = [alpha_S, alpha_P, alpha_D, alpha_F]
 
+	print alpha_sum
 
 
-
-if mode =="oster":
+if mode =="oster" or mode == "suboster":
 	level_pops, emiss = level_populations ( nlevels, alpha_sum, ne, line_info)
+	
 else:
 	level_pops, emiss = level_populations ( nlevels, alphas, ne, line_info)
 
 
-print "A VALUES"
-for i in range(len(line_info)):
-	print "A%i%i %8.4e" % (line_info[i].lu,  line_info[i].ll, A21 ( line_info[i] ))
+
+if mode != "probs":
+
+	print "A VALUES"
+	line_max = 0 
+	lines_to_do=[]
+	for i_line in range(len(line_info)):
+		if line_info[i_line].lu <= nlevels:
+			print "A%i%i %8.4e" % (line_info[i_line].lu,  line_info[i_line].ll, A21 ( line_info[i_line] ))
+			line_max += 1
+			lines_to_do.append(i_line)
 
 
+	print "\n  Level\t|\t  Pops     \t|  Emissivity rel to level 4"
+	print "------------------------------------------------------"
+	for i in range(1,len(level_pops)):
+		print "  %i   \t|\t %8.2e \t|\t%.2f" % (i+1, level_pops[i], emiss[i]/emiss[3])
 
-print "\n  Level\t|\t  Pops     \t|  Emissivity rel to level 4"
-print "------------------------------------------------------"
-for i in range(1,len(level_pops)):
-	print "  %i   \t|\t %8.2e \t|\t%.2f" % (i+1, level_pops[i], emiss[i]/emiss[3])
 
+	# find where Halpha and Hbeta are in the line list
+	for i_line in range(len(line_info)):
 
-# find where Halpha and Hbeta are in the line list
-for i_line in range(len(line_info)):
-
-	if line_info[i_line].lu == 3 and line_info[i_line].ll == 2: 	# then it is H alpha
-		where_H_alpha = i_line
-		nu_H_alpha = line_info[i_line].freq
+		if line_info[i_line].lu == 3 and line_info[i_line].ll == 2: 	# then it is H alpha
+			where_H_alpha = i_line
+			nu_H_alpha = line_info[i_line].freq
 		
-	if line_info[i_line].lu == 4 and  line_info[i_line].ll == 2: 	# then it is H beta
-		nu_H_beta = line_info[i_line].freq
-		where_H_beta = i_line
+		if line_info[i_line].lu == 4 and  line_info[i_line].ll == 2: 	# then it is H beta
+			nu_H_beta = line_info[i_line].freq
+			where_H_beta = i_line
 
 
-# calculate line strengths for Halpha and Hbeta
-H_alpha = H * nu_H_alpha * A21(line_info[where_H_alpha]) * level_pops[2]
-H_beta = H * nu_H_beta * A21(line_info[where_H_beta]) * level_pops[3]
-
-
-
-# print out the relative emissivity of Halpha to Hbeta
-print "\nH_alpha / H_beta  %f\n" % (H_alpha / H_beta)
+	# calculate line strengths for Halpha and Hbeta
+	H_alpha = H * nu_H_alpha * A21(line_info[where_H_alpha]) * level_pops[2]
+	H_beta = H * nu_H_beta * A21(line_info[where_H_beta]) * level_pops[3]
 
 
 
-# print out all other line strengths
-for i_line in range(len(line_info)):
-	I = H *  A21(line_info[i_line]) * level_pops[line_info[i_line].lu - 1] *line_info[i_line].freq / H_beta
-	print "Line strength %i => %i:  %.2f" % (line_info[i_line].lu, line_info[i_line].ll, I)
+	# print out the relative emissivity of Halpha to Hbeta
+	print "\nH_alpha / H_beta  %f\n" % (H_alpha / H_beta)
+
+
+
+	# print out all other line strengths
+	for i_line in lines_to_do:
+		I = H *  A21(line_info[i_line]) * level_pops[line_info[i_line].lu - 1] *line_info[i_line].freq / H_beta
+		print "Line strength %i => %i:  %.2f" % (line_info[i_line].lu, line_info[i_line].ll, I)
 		
-print"\n"
+	print "\n"
 
 
 #######################################################################################
@@ -137,10 +146,11 @@ print"\n"
 #CHIANTI WORK
 #
 #######################################################################################
-print "\n\n"
+
 
 # read in chianti data
-if mode == 'sub':
+if mode == 'suboster' or mode == 'sub':
+	print "\n\n"
 	chianti_levels, chianti_wgfa = read_chianti_data ( level_filename=ATOMJM+"/chianti/h_1.clvlc", 
 		                                               radiative_filename=ATOMJM+"/chianti/h_1.wgfa")
 
@@ -162,85 +172,83 @@ if mode == 'sub':
 
 
 
-sys.exit()
+
 
 
 #####################################
 #procedures for working out level information base on transition probabilities
 #####################################
 
+elif mode == "probs":
 
 
-level = read_level_info(ATOMJM+"/data/h4_levels.py")
+	transition_probs = np.loadtxt("transitions", dtype = "float", comments = "#", unpack=True)
 
+	eprbs_norm = np.zeros(5)
+	jprbs_norm = np.zeros(5)
+	Anorm = np.zeros(5)
+	Ajnorm = np.zeros(5)
 
-transition_probs = np.loadtxt("transitions", dtype = "float", comments = "#", unpack=True)
+	for i in range(len(transition_probs[0])):
 
-eprbs_norm = np.zeros(5)
-jprbs_norm = np.zeros(5)
-Anorm = np.zeros(5)
-Ajnorm = np.zeros(5)
-
-for i in range(len(transition_probs[0])):
-
-	n_old = transition_probs[0][i]
-	n_new = transition_probs[1][i]
-	eprbs = transition_probs[2][i]
-	jprbs = transition_probs[3][i]
+		n_old = transition_probs[0][i]
+		n_new = transition_probs[1][i]
+		eprbs = transition_probs[2][i]
+		jprbs = transition_probs[3][i]
 	
-	eprbs_norm[n_old-1] += eprbs
-	jprbs_norm[n_old-1] += jprbs
-	#print "jprbs %8.4e eprbs %8.4e" %( jprbs, eprbs)
-	if n_old < 5 and n_new <5 and n_old >1 and n_new < n_old:
-		E_old = level[n_old-1].E
-		E_new = level[n_new-1].E
+		eprbs_norm[n_old-1] += eprbs
+		jprbs_norm[n_old-1] += jprbs
+		#print "jprbs %8.4e eprbs %8.4e" %( jprbs, eprbs)
+		if n_old < 5 and n_new <5 and n_old >1 and n_new < n_old:
+			E_old = level[n_old-1].E
+			E_new = level[n_new-1].E
 		
-		if jprbs>0:
-			ratio = jprbs/eprbs
-		else:
-			ratio = 0.0
-		if E_new != 0:
-			print "%i => %i   jprbs/eprbs   %8.4e   predicted   %8.4e" % ( n_old, n_new, eprbs/jprbs, (E_old - E_new) / E_new )
-			
-	for i_line in range(len(line_info)):
-		if line_info[i_line].lu == n_old and line_info[i_line].ll == n_new:
-			Anorm[n_old-1] += A21(line_info[i_line]) * line_info[i_line].freq
 			if jprbs>0:
-				Ajnorm[n_old-1] += A21(line_info[i_line]) 
-
-
-
-
-
-
-for i in range(len(transition_probs[0])):
-
-	# level in transition probability matrix
-	n_old = transition_probs[0][i]
-	n_new = transition_probs[1][i]
-	
-	# normalise transition probability
-	eprbs = transition_probs[2][i] / eprbs_norm[n_old-1] 
-	jprbs = transition_probs[3][i] / jprbs_norm[n_old-1]
-	
-	
-	for i_line in range(len(line_info)):
-		if line_info[i_line].lu == n_old and line_info[i_line].ll == n_new:
-			Aval =  (A21(line_info[i_line])* line_info[i_line].freq) / Anorm[n_old-1]
-			if jprbs>0:
-				Ajval = (A21(line_info[i_line])) / Ajnorm[n_old-1]
-				print "%i => %i eprbs %f jprbs %f Ae value %f Aj value %f" % ( n_old, n_new, eprbs, jprbs, Aval, Ajval)
+				ratio = jprbs/eprbs
 			else:
-				print "%i => %i eprbs %f jprbs %f Ae value %f" % ( n_old, n_new, eprbs, jprbs, Aval)
-				
-	if n_old == 5 and n_new < 5:	# then we have a recombination process
+				ratio = 0.0
+			if E_new != 0:
+				print "%i => %i   jprbs/eprbs   %8.4e   predicted   %8.4e" % ( n_old, n_new, eprbs/jprbs, (E_old - E_new) / E_new )
+			
+		for i_line in range(len(line_info)):
+			if line_info[i_line].lu == n_old and line_info[i_line].ll == n_new:
+				Anorm[n_old-1] += A21(line_info[i_line]) * line_info[i_line].freq
+				if jprbs>0:
+					Ajnorm[n_old-1] += A21(line_info[i_line]) 
 
-		alpha_val = alpha_sum[n_new-1] / np.sum(alpha_sum)
-		if n_new!=1:
-			alpha_jval = alpha_sum[n_new-1] / np.sum(alpha_sum[1:])
-			print "%i => %i eprbs %f jprbs %f alphae %f alphaj %f" % ( n_old, n_new, eprbs, jprbs, alpha_val, alpha_jval)
-		else:
-			print "%i => %i eprbs %f jprbs %f alphae %f" % ( n_old, n_new, eprbs, jprbs, alpha_val)
+
+
+
+
+
+	for i in range(len(transition_probs[0])):
+
+		# level in transition probability matrix
+		n_old = transition_probs[0][i]
+		n_new = transition_probs[1][i]
+	
+		# normalise transition probability
+		eprbs = transition_probs[2][i] / eprbs_norm[n_old-1] 
+		jprbs = transition_probs[3][i] / jprbs_norm[n_old-1]
+	
+	
+		for i_line in range(len(line_info)):
+			if line_info[i_line].lu == n_old and line_info[i_line].ll == n_new:
+				Aval =  (A21(line_info[i_line])* line_info[i_line].freq) / Anorm[n_old-1]
+				if jprbs>0:
+					Ajval = (A21(line_info[i_line])) / Ajnorm[n_old-1]
+					print "%i => %i eprbs %f jprbs %f Ae value %f Aj value %f" % ( n_old, n_new, eprbs, jprbs, Aval, Ajval)
+				else:
+					print "%i => %i eprbs %f jprbs %f Ae value %f" % ( n_old, n_new, eprbs, jprbs, Aval)
+				
+		if n_old == 5 and n_new < 5:	# then we have a recombination process
+
+			alpha_val = alpha_sum[n_new-1] / np.sum(alpha_sum)
+			if n_new!=1:
+				alpha_jval = alpha_sum[n_new-1] / np.sum(alpha_sum[1:])
+				print "%i => %i eprbs %f jprbs %f alphae %f alphaj %f" % ( n_old, n_new, eprbs, jprbs, alpha_val, alpha_jval)
+			else:
+				print "%i => %i eprbs %f jprbs %f alphae %f" % ( n_old, n_new, eprbs, jprbs, alpha_val)
 			
 			
 
