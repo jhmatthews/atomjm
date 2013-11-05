@@ -61,7 +61,6 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 	print "----------------------------------------"
 	print 'Calculating for %i level atom' % n
 	
-	emiss_principle = np.zeros(n)
 	
 	# first check you have recombination coefficients for levels in question
 	if len(alphas[0]) < n:
@@ -78,8 +77,14 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 	# total levels is the sum of all subshells used and so is the length of the levels_used array
 	total_levels = len(levels_used)
 	
-	npops = np.zeros(total_levels)
-	emiss = np.zeros(total_levels)
+	
+	emiss_principal = np.zeros(n)		# arrays of emissivity by principal quantum number
+	npops = np.zeros(total_levels)		# level population by sub state
+	emiss = np.zeros(total_levels)		# emissivity by sub state
+	
+	halpha = 0.0
+	hbeta = 0.0
+	lyman = 0.0
 	
 	# now cycle over levels, with the highest first	
 	# for level 1s the i index is 0
@@ -88,18 +93,25 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 	
 		subshell = levels_used[i].notation[1]			# subshell string, e.g. s, p
 		n_level = levels_used[i].n						# principal quantum number of level
-		#print "Calculating for level %i, subshell %s, i %i tot %i" % (n_level, subshell, i, total_levels)
+		
+		
 		
 		# alpha_index helps us choose the recombination coefficient
 		# according to the subshell we are working with
 		# alphas are ordered by level and angular momentum
 		alpha_index = levels_used[i].l		
 		
+		
+		# get the relative weight of this specific state
+		# relative to the sub orbital as a whole
 		relative_weight = get_weight ( level, i)
-		# initially set n_i to be the number of recombinations direct to level i
+		
+		
+		# initially set n_i to be the number of recombinations direct to this sub state
+		# equal to recombinations to subshell times relative weight of state
 		n_i = (ne * ne * alphas [alpha_index][n_level-1] * relative_weight)
 		
-		#print  "Level %i %s pops %8.4e, ne %8.4e, relative_weight %f" % (i, levels_used[i].notation, n_i, ne, relative_weight)
+		
 		
 		
 		# now we need to loop over all higher levels and work out their contribution to the 
@@ -109,14 +121,21 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 			upper = levels_used[j].notation		# LS coupling notation for upper subshell
 			lower = levels_used[i].notation		# LS coupling notation for lower subshell
 		
+			J_upper = levels_used[j].j
+			J_lower = levels_used[i].j
 			
 			# loop over all lines in the wgfa file
 			for i_line in range(len(rad_info)):
 				
-				if rad_info[i_line].note_up == upper and rad_info[i_line].note_low == lower:
+				if rad_info[i_line].note_up == upper and \
+				   rad_info[i_line].note_low == lower and \
+				   rad_info[i_line].J_up == J_upper and \
+				   rad_info[i_line].J_low == J_lower:
 
-						#add the cascades from upper into i
-						n_i += rad_info[i_line].A * npops[j]		# add the contribution
+					#add the cascades from upper into i
+					n_i += rad_info[i_line].A * npops[j]		# add the contribution
+						
+						
 		
 		Asum = 0
 	
@@ -125,12 +144,18 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 		
 			upper = levels_used[i].notation		# LS coupling notation for upper subshell
 			lower = levels_used[j].notation		# LS coupling notation for lower subshell
-
+			
+			J_upper = levels_used[i].j
+			J_lower = levels_used[j].j
 			#print upper, lower
+			
+			# loop over all lines in the wgfa file
 			for i_line in range(len(rad_info)):
-				#if upper == "2p": print upper, lower, rad_info[i_line].note_up, rad_info[i_line].note_low
-				if rad_info[i_line].note_up == upper and rad_info[i_line].note_low == lower:
-				
+
+				if rad_info[i_line].note_up == upper and \
+				   rad_info[i_line].note_low == lower and \
+				   rad_info[i_line].J_up == J_upper and \
+				   rad_info[i_line].J_low == J_lower:
 					Asum += rad_info[i_line].A
 
 
@@ -138,7 +163,6 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 		# dividing by the sum of A coefficients out of level i gives level populations
 		
 		n_i = n_i / Asum
-
 		
 		npops[i] = n_i
 		
@@ -148,25 +172,45 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 		# we know have level populations, can work out level emissivities = A_ij n_i h nu_ij
 		for j in range(i, -1, -1):
 		
+			upper = levels_used[i].notation		# LS coupling notation for upper subshell
+			lower = levels_used[j].notation		# LS coupling notation for lower subshell
+			J_upper = levels_used[i].j
+			J_lower = levels_used[j].j
+		
 			emiss_sum = 0.
 			for i_line in range(len(rad_info)):
 
-				if rad_info[i_line].note_up == upper and rad_info[i_line].note_low == lower:
+				if rad_info[i_line].note_up == upper and \
+				   rad_info[i_line].note_low == lower and \
+				   rad_info[i_line].J_up == J_upper and \
+				   rad_info[i_line].J_low == J_lower:
+				   
 					emiss_sum += rad_info[i_line].A * n_i * H * rad_info[i_line].freq
+					
+					if upper[0] == '4' and lower[0] == '2':
+						hbeta += rad_info[i_line].A * n_i * H * rad_info[i_line].freq
+					if upper[0] == '3' and lower[0] == '2':
+						halpha += rad_info[i_line].A * n_i * H * rad_info[i_line].freq
+					if upper[0] == '2' and lower[0] == '1':
+						lyman += rad_info[i_line].A * n_i * H * rad_info[i_line].freq
 			
 			emiss[i] = emiss_sum
-			emiss_principle[ n_level - 1] += emiss_sum
+			emiss_principal[ n_level - 1] += emiss_sum
 		
-		print "Level %i, %s: n_i %8.4e" %( i, levels_used[i].notation, n_i)
+		print "Level %i, %s: n_i %8.4e weighted %8.4e " %( i, levels_used[i].notation, n_i, n_i/relative_weight)
 	
 	
-	
-	print emiss_principle
+	h_alpha_ratio = halpha / hbeta
+	lyman_ratio = lyman / hbeta
+	print emiss_principal
 	print npops
-	return npops, emiss, emiss_principle
+	return npops, emiss, emiss_principal, h_alpha_ratio, lyman_ratio
 	
 	
 	
+
+
+
 
 
 def level_populations ( n, alphas, ne, line ):
@@ -261,6 +305,10 @@ def level_populations ( n, alphas, ne, line ):
 	
 	return npops, emiss
 	
+
+
+
+
 	
 	
 def get_weight (level_class, index):
@@ -271,10 +319,10 @@ def get_weight (level_class, index):
 	to the subshell as a whole. 
     
     :INPUT:  
-            level_class:  	object
-            					chianti level class instance
-            	index:			int
-            					location of state in class instance
+            level_class:  		object
+            						chianti level class instance
+            	index:				int
+            						location of state in level class instance
 
     :OUTPUT:
             relative_weight:		float
@@ -284,8 +332,10 @@ def get_weight (level_class, index):
             weight = get_weight (rad_class, i)
             
     :COMMENTS:
-    		due to some levels having multiple states
+    			due to some levels having multiple states we sometimes need to split up the 4f level, for example
+    			by statistical weight. 
 	'''
+	
 	# subshell string e.g. 2s
 	subshell = level_class[index].notation
 	

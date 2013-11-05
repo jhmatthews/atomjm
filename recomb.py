@@ -123,12 +123,45 @@ H_beta = H * nu_H_beta * A21(line_info[where_H_beta]) * level_pops[3]
 print "\nH_alpha / H_beta  %f\n" % (H_alpha / H_beta)
 
 
+
 # print out all other line strengths
 for i_line in range(len(line_info)):
 		I = H *  A21(line_info[i_line]) * level_pops[line_info[i_line].lu - 1] *line_info[i_line].freq / H_beta
 		print "Line strength %i => %i:  %.2f" % (line_info[i_line].lu, line_info[i_line].ll, I)
 		
 print"\n"
+
+
+#######################################################################################
+#
+#CHIANTI WORK
+#
+#######################################################################################
+print "\n\n"
+
+# read in chianti data
+chianti_levels, chianti_wgfa = read_chianti_data ( level_filename=ATOMJM+"/chianti/h_1.clvlc", 
+                                                   radiative_filename=ATOMJM+"/chianti/h_1.wgfa")
+
+print 'Read Chianti data.'
+
+npops, emiss_sub, emiss_principle, Halpha_ratio, lyman_ratio = subshell_pops ( 4, alphas, ne, chianti_levels, chianti_wgfa )
+
+
+for i_em in range(len(emiss)):
+	print "Level %i, pops_nonsub %f pops_sub %f" % (i_em+1, 
+	                                                emiss[i_em]/emiss[3], 
+	                                                emiss_principle[i_em]/ emiss_principle[3])
+
+
+print "Halpha_ratio",  Halpha_ratio                              
+print "Lyman ratio", lyman_ratio
+
+
+
+
+
+
 
 
 level = read_level_info(ATOMJM+"/data/h4_levels.py")
@@ -203,25 +236,7 @@ for i in range(len(transition_probs[0])):
 			print "%i => %i eprbs %f jprbs %f alphae %f" % ( n_old, n_new, eprbs, jprbs, alpha_val)
 			
 			
-#######################################################################################
-#
-#CHIANTI WORK
-#
-#######################################################################################
-print "\n\n"
 
-# read in chianti data
-chianti_levels, chianti_wgfa = read_chianti_data ( level_filename=ATOMJM+"/chianti/h_1.clvlc", 
-                                                   radiative_filename=ATOMJM+"/chianti/h_1.wgfa")
-
-print 'Read Chianti data.'
-
-npops, emiss_sub, emiss_principle = subshell_pops ( 4, alphas, ne, chianti_levels, chianti_wgfa )
-
-
-for i_em in range(len(emiss)):
-	print "Level %i, pops_nonsub %f pops_sub %f" % (i_em+1, 
-	                                                      emiss[i_em]/emiss[3], emiss_principle[i_em]/ emiss_principle[3])
 
 
 

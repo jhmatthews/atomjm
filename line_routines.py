@@ -254,8 +254,10 @@ def read_chianti_data ( level_filename="h_1.clvlc", radiative_filename="h_1.wgfa
 		A = float (rad_array_read[i][4])
 		note_low = str(rad_array_read[i][5])
 		note_up = str(rad_array_read[i][8])
+		J_low = float(rad_array_read[i][6][2:])
+		J_up = float(rad_array_read[i][9][2:])
 		
-		rad[i] = cls.chianti_rad(ll, lu, wave, freq, osc, A, note_low, note_up)
+		rad[i] = cls.chianti_rad(ll, lu, wave, freq, osc, A, note_low, note_up, J_low, J_up)
 		
 	return level, rad
 

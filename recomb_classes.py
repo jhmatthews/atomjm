@@ -145,7 +145,7 @@ class chianti_rad:
 	final level corresponding to the indices of the levels as given in the .elvlc file
 	See http://www.chiantidatabase.org/cug.pdf Page 9 for description
 	'''
-	def __init__(self, _ll, _lu, _wave, _freq, _osc, _A, _note_low, _note_up):
+	def __init__(self, _ll, _lu, _wave, _freq, _osc, _A, _note_low, _note_up, _J_low, _J_up):
 		self.ll = _ll
 		self.lu = _lu
 		self.wave = _wave
@@ -154,6 +154,8 @@ class chianti_rad:
 		self.A = _A
 		self.note_low = _note_low
 		self.note_up = _note_up
+		self.J_low = _J_low
+		self.J_up = _J_up
 		
 		
 		
