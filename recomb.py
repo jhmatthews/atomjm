@@ -152,8 +152,8 @@ if mode != "probs":
 # read in chianti data
 if mode == 'suboster' or mode == 'sub':
 	print "\n\n"
-	chianti_levels, chianti_wgfa = read_chianti_data ( level_filename=ATOMJM+"/chianti/h_1.clvlc", 
-		                                               radiative_filename=ATOMJM+"/chianti/h_1.wgfa")
+	chianti_levels, chianti_wgfa = read_chianti_data ( level_filename = ATOMJM + "/data/h_1.clvlc", 
+		                                               radiative_filename = ATOMJM + "/data/h_1.wgfa")
 
 	print 'Read Chianti data.'
 
