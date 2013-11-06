@@ -365,9 +365,61 @@ def get_weight (level_class, index):
 	
 	return weight
 		
+
+def get_py_recombs():
+
+	'''
+	gets Python recombination data from file data/python_recombs.dat
 	
+	:INPUT: 
+		none
+		requires python_recombs.dat file in $ATOMJM/data/
+	
+	:OUTPUT:
+		alphas:		float array
+					array of python recomb data, indexed by level. 
+				
+				
+	:COMMENTS:
+		make sure you have the $ATOMJM environment variables
+		set up.
+	'''
+
+	data = "%s/data/python_recombs.dat" % ATOMJM
+	
+	array = np.loadtxt(data, comments ="#", dtype = "float")
+	
+	array = np.transpose(array)
+	
+	alphas = array[0]
+	
+	return alphas
+
+
 
 	
+def get_py_alpha ( n, alpha_data = get_py_recombs() ):
+	
+	'''
+	gets the python recombination coefficient at 10000K
+	'''
+
+	alpha = alpha_data[n-1]
+	
+	return alpha
+	
+	
+
+
+
+
+
+
+
+
+
+
+
 	
 def get_cloudy_recombs():
 
@@ -407,7 +459,15 @@ def get_cloudy_recombs():
 	
 	
 	
-def get_cloudy_alpha ( nelem, n, T, data = get_cloudy_recombs()):
+
+
+
+
+
+
+	
+	
+def get_cloudy_alpha ( nelem, n, T, alpha_data = get_cloudy_recombs()):
 
 	'''
 	works out recombination coefficient for element nelem
@@ -431,7 +491,7 @@ def get_cloudy_alpha ( nelem, n, T, data = get_cloudy_recombs()):
 	'''
 	
 	i_temp = int (4.0 * np.log10(T))
-	alpha = data [n-1][i_temp]
+	alpha = alpha_data [n-1][i_temp]
 	
 	return alpha	
 
