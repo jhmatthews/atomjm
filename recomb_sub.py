@@ -40,21 +40,26 @@ def subshell_pops ( n, alphas, ne, level, rad_info ):
 	and cascades from upper levels.
     
     :INPUT:  
-            n:  		int      
-                		number of levels in atom
-            alphas:	float array
-            			recombination coefficients for levels, split by subshell.
-            			in form [alpha_s, alpha_p, etc...]
-            ne:		float
-            			electron density
-            level	object array
-					array of chianti_level class instances
+            n:  			int      
+                			number of levels in atom
+            alphas:		float array
+            				recombination coefficients for levels, split by subshell.
+            				in form [alpha_s, alpha_p, etc...]
+            ne:			float
+            				electron density
+            level		object array
+						array of chianti_level class instances
 			rad_info		object array
-					array of chianti_rad class instances
-					contains radiative information
+						array of chianti_rad class instances
+						contains radiative information
 	:OUTPUT:
-            levels:	array
-            			level populations in number / cm**3			
+            npops:				array
+            						level populations in number / cm**3
+            	emiss:				array
+            						level emissivities in ergs
+            	emiss_principal:		array
+            						level emissivities in ergs summed over subshells
+            						for each n
             		
      
      '''
@@ -221,16 +226,19 @@ def level_populations ( n, alphas, ne, line ):
 	and cascades from upper levels.
     
     :INPUT:  
-            n:  		int      
-                		number of levels in atom
-            alphas:	float array
-            			recombination coefficients for levels.
-            ne:		float
-            			electron density
+            n:  			int      
+                			number of levels in atom
+            alphas:		float array
+            				recombination coefficients for levels.
+            ne:			float
+            				electron density
 
     :OUTPUT:
-            levels:	array
-            			level populations in number / cm**3
+            npops:		array
+            				level populations in number / cm**3
+            	emiss:		array
+            				level emissivities in ergs
+            				
     :EXAMPLE:
             levels = level_populations ( n, alphas, ne )
             
@@ -356,14 +364,36 @@ def get_weight (level_class, index):
 		
 	
 	
-def alpha_sp( n , T):
+	
+	
+	
+	
+	
+	
+	
+
+
+
+	
+'''
+the routines below all deal with calculating recombination coefficients 
+using the fitting formula presented by Ferguson & Ferland 1996
+
+http://cdsads.u-strasbg.fr/abs/1997ApJ...479..363F
+
+As yet I can't get these fits to spit out reasonable numbers. 
+I get erroneously large recombination coefficients for n=3, for example.
+'''	
+	
+	
+def alpha_ferguson( n , T):
 
 	'''
 	get recombination coefficient for level n, electron temperature T
 	
 	:INPUT:
-		n:			float
-					number of level
+		n:			int
+					principal quantum number of level
 		T:			float
 					Electron temperature, K
 	
@@ -373,19 +403,23 @@ def alpha_sp( n , T):
 					for principal quantum number n
 	'''
 	
-	x = np.log10(T)
+	x = np.log10 (T)
 	
 	if n <= 15:
 	
-		data = get_ferguson_data()
+		# if n is less than 15 we use the fitting formula from Ferguson and Ferland 1996
+		alpha = ( 10.0 ** ( ferguson_F (x, n) ) ) / T
+
 	
-		coeffs = data[n-1] 
-	
-		alpha = ( 10.0 ** ( ferguson_F (x, coeffs) ) ) / T
-		
+	elif n ==16:
+		print "CASE B"
+		alpha = ( 10.0 ** ( ferguson_F (x, n) ) ) / T
 	else:
-		print "Don't have enough Ferguson data to deal with n>15 yet- need to implement asymptotic formula, sorry!"
+	
+		print "Don't have enough Ferguson data to deal with n>15 yet- \
+			   need to implement asymptotic formula, sorry! Exiting."
 		sys.exit()
+
 	
 	return alpha
 	
@@ -394,7 +428,7 @@ def alpha_sp( n , T):
 
 
 
-def ferguson_F (x, coeffs):
+def ferguson_F (x, n):
 	
 	'''
 	Equation (1) from Ferguson and Ferland 1996.
@@ -403,18 +437,37 @@ def ferguson_F (x, coeffs):
 	:INPUT:
 		x:			float
 					log(T_e)
-		coeffs:		float array
-					array of coefficients
-	OUTPUT:
+		n:			int
+					principal quantum number of level
+					
+	:OUTPUT:
 		F:			float
 					F value for input to alpha calculation
+					
+	:COMMENTS:
+		make sure you have the $ATOMJM environment variables
+		set up.
 		
 	'''
 	
-	numerator = coeffs[0] + x*coeffs[2] +  (x**2)*coeffs[4] + (x**3)*coeffs[6] + (x**4)*coeffs[8]
-	denominator = 1.0 + x*coeffs[1] +  (x**2)*coeffs[3] + (x**3)*coeffs[5] + (x**4)*coeffs[7]
+	data = get_ferguson_data()
 	
-	return numerator / denominator
+	coeffs = data[n-1] 
+	
+	#print coeffs
+	
+	numerator = coeffs[0] +  x*coeffs[2]  +   (x**2)*coeffs[4]  + \
+	             (x**3)*coeffs[6]  +  (x**4)*coeffs[8] 
+	
+	denominator = 1.0 + x*coeffs[1] +  (x**2)*coeffs[3]  + \
+	               (x**3)*coeffs[5] +  (x**4)*coeffs[7] 
+	               
+	F = 	numerator / denominator  
+	                      
+	
+	print n, F, x, numerator, coeffs[0],  coeffs[2], coeffs[4],coeffs[6], coeffs[8]
+	
+	return F
 
 
 
@@ -425,12 +478,18 @@ def get_ferguson_data():
 	'''
 	gets Ferguson & Ferland 1996 data from file data/ferguson.dat
 	
-	:INPUT: none
+	:INPUT: 
+		none
+		requires ferguson.dat file in $ATOMJM/data/
 	
 	:OUTPUT:
 		array:	float array
 				array of fergusion data, indexed by level. 
 				9 coefficients for each level
+				
+	:COMMENTS:
+		make sure you have the $ATOMJM environment variables
+		set up.
 	'''
 	
 	# set ATOMJM os environment

@@ -56,8 +56,49 @@ class topbase_class:
 		self.np = np_init
 		self.energy = energies
 		self.XS = cross_sections
+		
+
+
+
+
+'''
+Verner, D. A., & Yakovlev, D. G. 1995, A&AS, 109, 125. 
+Analytic fits for partial photoionization cross sections.
+Table 1 `Fit parameters for partial photoionization cross sections'
+Byte-per-byte description of file: table1.dat
+-------------------------------------------------------------------------------
+   Bytes Format  Units   Label        Explanations
+-------------------------------------------------------------------------------
+   1-  2  I2     ---     Z            Atomic number
+   4-  5  I2     ---     N            Number of electrons
+   7-  7  I1     ---     n            Principal quantum number of the shell 
+   9-  9  I1     ---     l            Orbital quantum number of the subshell 
+  11- 20  E10.4  eV      E_th         Subshell ionization threshold energy
+  22- 31  E10.4  eV      E_0          Fit parameter
+  33- 42  E10.4  Mb      \sigma_0     Fit parameter
+  44- 53  E10.4  ---     y_a          Fit parameter
+  55- 64  E10.4  ---     P            Fit parameter
+  66- 75  E10.4  ---     y_w          Fit parameter
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+'''
+class verner_class:
+	'''verner photoionization data from Verner & Yakovlev 1995'''
+	def __init__(self, _Z, _N, _n, _l, _E_th, _E_0, _sigma_0, _y_a, _P, _y_w):
+		self.Z = _Z
+		self.N = _N
+		self.n = _n
+		self.l = _l
+		self.E_th = _E_th
+		self.E_0 = _E_0
+		self.sigma_0 = _sigma_0
+		self.y_a = _y_a
+		self.P = _P
+		self.y_w = _y_w
         
-        
+
+
+   
 #mode class: sets mode from command line
 class modeclass:
 	'''The mode class: for reading arguments from command line'''
