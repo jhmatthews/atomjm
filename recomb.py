@@ -51,7 +51,8 @@ line_info = read_line_info (line_filename)
 
 # obtain recombination coefficients
 if mode == "std":
-	alphas = [ alpha_sp( n , T) for n in range(1,nlevels+1) ]
+	data = get_cloudy_recombs()
+	alphas = [ get_cloudy_alpha ( 0, n, T, data = data) for n in range(1,nlevels+1) ]
 	print alphas
 
 # recombination coefficients from Osterbrock. 

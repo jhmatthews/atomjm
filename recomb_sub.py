@@ -23,6 +23,9 @@ from recomb_const import *
 import os, sys
 
 
+# set ATOMJM os environment
+ATOMJM = os.environ ['ATOMJM']
+
 
 
 def levels_from_probs( n, eprbs, jprbs, eprbsnorm, jprbsnorm):
@@ -363,14 +366,74 @@ def get_weight (level_class, index):
 	return weight
 		
 	
+
+	
+	
+def get_cloudy_recombs():
+
+	'''
+	gets Cloudy recombination data from file data/h_iso_recomb.dat
+	
+	:INPUT: 
+		none
+		requires h_iso_recomb.dat file in $ATOMJM/data/
+	
+	:OUTPUT:
+		array:	float array
+				array of cloudy recomb data, indexed by level. 
+				
+				
+	:COMMENTS:
+		make sure you have the $ATOMJM environment variables
+		set up.
+	'''
+	
+	data = "%s/data/h_iso_recomb.dat" % ATOMJM
+	
+	array = np.loadtxt(data, comments ="#", dtype = "float")
+	
+	array = np.transpose(array)
+	
+	array = array[2:]
+	
+	array = np.transpose(array)
+	
+	array = 10.0**array
+	
+	# can now index with [level][temperature_index]
+	
+	return array
 	
 	
 	
 	
+def get_cloudy_alpha ( nelem, n, T, data = get_cloudy_recombs()):
+
+	'''
+	works out recombination coefficient for element nelem
+	level n, by using cloudy data from h_iso_recomb.dat
 	
+	:INPUT:
+		nelem:			int
+						atomic number
+		n:				int
+						principal quantum number of level
+		T:				float
+						electron temperature, K
+		data:			optional
+						data array
+						
+	:OUTPUT:
+		alpha:			float
+						recombination coefficient in cm**-3 s**-1
+						for principal quantum number n
+
+	'''
 	
+	i_temp = int (4.0 * np.log10(T))
+	alpha = data [n-1][i_temp]
 	
-	
+	return alpha	
 
 
 
@@ -492,8 +555,6 @@ def get_ferguson_data():
 		set up.
 	'''
 	
-	# set ATOMJM os environment
-	ATOMJM = os.environ ['ATOMJM']
 	
 	data = ATOMJM + "/data/ferguson.dat"
 	
