@@ -52,7 +52,7 @@ line_info = read_line_info (line_filename)
 # obtain recombination coefficients
 if mode == "std":
 	data_use = get_py_recombs()
-	alphas = [ get_py_alpha (  n, alpha_data = data_use) for n in range(1,nlevels+1) ]
+	alphas = [ get_py_alpha (  n, T,  alpha_data = data_use) for n in range(1,nlevels+1) ]
 	print alphas
 
 # recombination coefficients from Osterbrock. 

@@ -391,20 +391,28 @@ def get_py_recombs():
 	
 	array = np.transpose(array)
 	
-	alphas = array[0]
+	alphas = array[0:2]
 	
 	return alphas
 
 
 
 	
-def get_py_alpha ( n, alpha_data = get_py_recombs() ):
+def get_py_alpha ( n, T, alpha_data = get_py_recombs() ):
 	
 	'''
-	gets the python recombination coefficient at 10000K
+	gets the python recombination coefficient at 10000K or 20000K
 	'''
-
-	alpha = alpha_data[n-1]
+	
+	if T==10000.0:
+		alpha = alpha_data[1][n-1]
+		
+	elif T==20000.0:
+		alpha = alpha_data[0][n-1]
+		
+	else:
+		print 'Sorry, can only do recombination coefficients at 10000 or 2000K! Exiting.'
+		sys.exit()
 	
 	return alpha
 	
