@@ -50,7 +50,12 @@ level_filename = "%s/data/h20_lines.py" % (ATOMJM)
 line_info = read_line_info (line_filename)
 
 # obtain recombination coefficients
-if mode == "std":
+if mode == "cloudy":
+	data_use = get_cloudy_recombs()
+	alphas = [ get_cloudy_alpha (  n, T,  alpha_data = data_use) for n in range(1,nlevels+1) ]
+	print alphas
+	
+if mode == "py":
 	data_use = get_cloudy_recombs()
 	alphas = [ get_cloudy_alpha (  n, T,  alpha_data = data_use) for n in range(1,nlevels+1) ]
 	print alphas

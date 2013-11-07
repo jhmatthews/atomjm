@@ -12,4 +12,5 @@ To run, simply
 	* oster -- do non-subshell calculations for Osterbrock recombination coefficients
 	* suboster -- do subshell calculations and normal n calculations, using recomb from Osterbrock
 	* probs -- read in a file transitions which contains transition probabilities, check expected probabilities against A values
-	* std -- use Ferguson & Ferland 1996 fits to recombination coefficients, do not split by subshell
+	* cloudy -- use cloudy recombination coefficients from h_iso_recomb_mod.dat
+	* py -- use recombination coefficients direct from Python printout
