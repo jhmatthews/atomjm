@@ -448,7 +448,7 @@ def get_cloudy_recombs():
 		set up.
 	'''
 	
-	data = "%s/data/h_iso_recomb.dat" % ATOMJM
+	data = "%s/data/h_iso_recomb_mod.dat" % ATOMJM
 	
 	array = np.loadtxt(data, comments ="#", dtype = "float")
 	
@@ -475,7 +475,7 @@ def get_cloudy_recombs():
 
 	
 	
-def get_cloudy_alpha ( nelem, n, T, alpha_data = get_cloudy_recombs()):
+def get_cloudy_alpha ( n, T, alpha_data = get_cloudy_recombs()):
 
 	'''
 	works out recombination coefficient for element nelem
@@ -498,7 +498,7 @@ def get_cloudy_alpha ( nelem, n, T, alpha_data = get_cloudy_recombs()):
 
 	'''
 	
-	i_temp = int (4.0 * np.log10(T))
+	i_temp = int ( (np.log10(T) - 3.0) / 0.1)
 	alpha = alpha_data [n-1][i_temp]
 	
 	return alpha	
