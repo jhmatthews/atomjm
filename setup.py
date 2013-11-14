@@ -25,7 +25,7 @@ def write_bash_profile():
 		myfile.write ("\n#AtomJM addition \n\n# appending atomjm to path\n")
 		myfile.write ('export ATOMJM="' + os.getcwd() + '"\n')
 		myfile.write ("export PATH=$PATH:$ATOMJM\n")
-		myfile.write ("export PYTHONPATH=$PYTHONPATHPATH:$ATOMJM\n")
+		myfile.write ("export PYTHONPATH=$PYTHONPATH:$ATOMJM\n")
 		myfile.write ("\n#Finished editing path with AtomJM\n")
 	
 	myfile.close()
