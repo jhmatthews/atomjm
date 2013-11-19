@@ -43,7 +43,7 @@ nlevels = int(sys.argv[3])			# n level macro atom
 
 #Let's work with an n level Hydrogen atom, up to 20.
 line_filename = "%s/data/h20_lines.py" % (ATOMJM)	# atomic data file
-level_filename = "%s/data/h20_lines.py" % (ATOMJM)
+level_filename = "%s/data/h20_levels.py" % (ATOMJM)
 
 
 # this next line simply reads line info from the file and places in a line class instance
