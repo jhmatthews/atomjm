@@ -293,8 +293,8 @@ def partition (lvl_array, T):
 	
 	
 def boltzmann (lvl_array, T, n_r):
-
-
+	'''calculate boltzmann factors for all levels in class instance lvl_array'''
+	
 	nlevels = len(lvl_array)
 	
 	bolt = np.zeros(nlevels)
@@ -318,7 +318,7 @@ def boltzmann (lvl_array, T, n_r):
 	
 	
 def boltzmann2 (lvl_array, T, n_0, g_0):
-
+	'''calculate boltzmann factors for all levels in class instance lvl_array'''
 
 	nlevels = len(lvl_array)
 	
@@ -329,7 +329,6 @@ def boltzmann2 (lvl_array, T, n_0, g_0):
 		
 		n_i = ( lvl_array[i].g / g_0 )
 		
-		print lvl_array[i].g, g_0, lvl_array[i].g / g_0
 		
 		n_i *= np.exp ((- lvl_array[i].E * EV2ERGS) / (BOLTZMANN * T) )
 		
