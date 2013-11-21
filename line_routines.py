@@ -263,6 +263,93 @@ def read_chianti_data ( level_filename="h_1.clvlc", radiative_filename="h_1.wgfa
 
 
 
+def partition (lvl_array, T):
+	'''
+	Calculate the partition function for ion i
+	U_i = sum over n ( g_in exp ( -E_in / KT) )
+	
+	:INPUT:
+		lvl_array			object array
+							array of level class instances
+							
+		T					float
+							temperature in K
+							
+	:OUTPUT:
+		part_func			float
+							value of the partition function
+							
+	'''
+	sum_over = 0.0
+	for i in range(len(lvl_array)):
+		g = 	lvl_array[i].g
+		exp_term = np.exp ( (- lvl_array[i].E * EV2ERGS) / (BOLTZMANN * T) )
+		
+		sum_over += ( g * exp_term )
+	
+	part_func = sum_over
+	
+	return part_func
+	
+	
+def boltzmann (lvl_array, T, n_r):
+
+
+	nlevels = len(lvl_array)
+	
+	bolt = np.zeros(nlevels)
+	
+	for i in range(nlevels):
+		
+		n_i = ( lvl_array[i].g / partition (lvl_array, T) )
+		
+		n_i *= np.exp ((- lvl_array[i].E * EV2ERGS) / (BOLTZMANN * T) )
+		
+		bolt[i] = n_i
+	
+	bolt = np.array(bolt)
+	
+	bolt /= bolt[0]
+	
+	return bolt
+	
+	
+	
+	
+	
+def boltzmann2 (lvl_array, T, n_0, g_0):
+
+
+	nlevels = len(lvl_array)
+	
+	bolt = np.zeros(nlevels)
+	
+	bolt[0] = 1.0
+	for i in range(1, nlevels):
+		
+		n_i = ( lvl_array[i].g / g_0 )
+		
+		print lvl_array[i].g, g_0, lvl_array[i].g / g_0
+		
+		n_i *= np.exp ((- lvl_array[i].E * EV2ERGS) / (BOLTZMANN * T) )
+		
+		bolt[i] = n_i  
+	
+	return bolt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	

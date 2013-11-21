@@ -21,7 +21,7 @@ from line_routines import A21, q12, q21, read_line_info, read_level_info, read_c
 import numpy as np
 from recomb_const import *
 import os, sys
-
+import matplotlib.pyplot as plt
 
 # set ATOMJM os environment
 ATOMJM = os.environ ['ATOMJM']
@@ -633,6 +633,16 @@ def get_ferguson_data():
 	return array
 	
 	
-	
+# set some standard parameters
+def setpars():
+    
+	print 'Setting plot parameters for matplotlib.'
+	plt.rcParams['lines.linewidth'] = 1.0
+	plt.rcParams['axes.linewidth'] = 1.3
+	plt.rcParams['font.family'] = 'serif'
+	plt.rcParams['font.serif'] = 'Times New Roman'
+	plt.rcParams['text.usetex']='True'
+    
+	return 0	
 	
 
