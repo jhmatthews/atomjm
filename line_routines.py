@@ -340,7 +340,7 @@ def boltzmann2 (lvl_array, T, n_0, g_0, rel = 0):
 
 
 
-def boltzmann_rel (lvl_array, T, n_0, g_0, rel = 0):
+def boltzmann_rel (lvl_array, T):
 	'''calculate boltzmann factors relative to prev level'''
 
 	nlevels = len(lvl_array)
