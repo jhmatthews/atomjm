@@ -309,7 +309,7 @@ def boltzmann (lvl_array, T, n_r):
 	
 	bolt = np.array(bolt)
 	
-	bolt /= bolt[0]
+	bolt /= np.sum(bolt)
 	
 	return bolt
 	
@@ -317,22 +317,22 @@ def boltzmann (lvl_array, T, n_r):
 	
 	
 	
-def boltzmann2 (lvl_array, T, n_0, g_0):
+def boltzmann2 (lvl_array, T, n_0, g_0, rel = 0):
 	'''calculate boltzmann factors for all levels in class instance lvl_array'''
 
 	nlevels = len(lvl_array)
 	
 	bolt = np.zeros(nlevels)
 	
-	bolt[0] = 1.0
-	for i in range(1, nlevels):
+	bolt[rel] = 1.0
+	for i in range(0, nlevels):
+		if i != rel:
+			n_i = ( lvl_array[i].g / g_0 )
 		
-		n_i = ( lvl_array[i].g / g_0 )
 		
+			n_i *= np.exp ((- lvl_array[i].E * EV2ERGS) / (BOLTZMANN * T) )
 		
-		n_i *= np.exp ((- lvl_array[i].E * EV2ERGS) / (BOLTZMANN * T) )
-		
-		bolt[i] = n_i  
+			bolt[i] = n_i  
 	
 	return bolt
 
@@ -340,7 +340,26 @@ def boltzmann2 (lvl_array, T, n_0, g_0):
 
 
 
+def boltzmann_rel (lvl_array, T, n_0, g_0, rel = 0):
+	'''calculate boltzmann factors relative to prev level'''
 
+	nlevels = len(lvl_array)
+	
+	bolt = np.zeros(nlevels)
+	
+	#bolt[rel] = 1.0
+	for i in range(1, nlevels):
+		
+		delta_E = lvl_array[i].E - lvl_array[i-1].E
+
+		n_i = ( lvl_array[i].g / lvl_array[i-1].g )
+		
+		
+		n_i *= np.exp ((- delta_E * EV2ERGS) / (BOLTZMANN * T) )
+		
+		bolt[i] = n_i 
+	
+	return bolt
 
 
 
