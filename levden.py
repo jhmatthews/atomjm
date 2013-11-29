@@ -77,7 +77,7 @@ ax.plot( n[0:20], bolt[0:20], "r--", label = "LTE")
 
 ax.set_ylabel("$N_i / N$")
 ax.set_xlabel("n")
-ax.set_yscale("log")
+#ax.set_yscale("log")
 
 
 # create subplot and plot N_{i+1} / N_i
@@ -90,6 +90,7 @@ ax.set_ylabel("$N_{i+1} / N_i$")
 ax.set_xlabel("i (level)")
 #ax.set_yscale("log")
 plt.legend(loc=4)
+
 
 
 # show plot
